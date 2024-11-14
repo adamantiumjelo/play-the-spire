@@ -7,3 +7,4 @@ Auto-select starting boon
 Auto-select card / rewards
 Auto-complete events
 Auto-complete shops
+
