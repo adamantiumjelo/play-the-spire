@@ -1,0 +1,9 @@
+// Current version
+Plays all cards in hand on first enemy
+
+// Next Milestones
+Auto-select path
+Auto-select starting boon
+Auto-select card / rewards
+Auto-complete events
+Auto-complete shops
