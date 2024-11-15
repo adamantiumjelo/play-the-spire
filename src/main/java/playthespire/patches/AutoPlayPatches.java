@@ -38,6 +38,7 @@ public class AutoPlayPatches {
     public static class OnRefreshHandCheckToPlayCardPatch {
         static ReflectionHacks.RMethod playCard;
         public static boolean isEndingTurn;
+        public static boolean isCombatStarting = true;
 
         // Annotation to tell SpirePatch "Insert" how to locate the line to insert this function
         @SpireInsertPatch(
@@ -45,7 +46,14 @@ public class AutoPlayPatches {
         )
         // Function that will be executed every time locator finds a line match
         public static void Insert(CardGroup __instance) {
-//            logger.info("Hand Reorder Triggered");
+            if(!AbstractDungeon.actionManager.actions.isEmpty())
+            {
+                logger.info("Other actions still going");
+
+                return;
+            }
+            logger.info("Hand Reorder Triggered");
+            logger.info(isCombatStarting);
 //            logger.info(AbstractDungeon.isScreenUp);
 //            logger.info(AbstractDungeon.actionManager.actions.isEmpty());
 //            logger.info(AbstractDungeon.actionManager.currentAction);
@@ -54,6 +62,7 @@ public class AutoPlayPatches {
             if (!AbstractDungeon.isScreenUp                                 // battle screen is open
                     && AbstractDungeon.actionManager.actions.isEmpty()      // no pending actions
                     && AbstractDungeon.actionManager.currentAction == null  // no current action
+                    && !isCombatStarting                                    // not starting combat
                     && !isEndingTurn) {                                     // not ending turn
 
                 // will be null if all enemies are dead
@@ -65,7 +74,7 @@ public class AutoPlayPatches {
                     boolean foundACard = false;
                     for (AbstractCard cardInHand : AbstractDungeon.player.hand.group) {
                         // find a card that can be played with the current target
-                        // TODO: This may make it only play attacks, since current target will always be an enemy?
+                        // Note: this uses each card's specific canUse implementation, some of which don't require a target (like self-targeted skills)
                         if (cardInHand.canUse(AbstractDungeon.player, target)) {
                             foundACard = true;
 

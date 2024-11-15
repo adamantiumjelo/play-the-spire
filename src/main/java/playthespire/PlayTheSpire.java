@@ -1,9 +1,12 @@
 package playthespire;
 
 import basemod.BaseMod;
-import basemod.interfaces.EditKeywordsSubscriber;
-import basemod.interfaces.EditStringsSubscriber;
-import basemod.interfaces.PostInitializeSubscriber;
+import basemod.interfaces.*;
+import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
+import com.megacrit.cardcrawl.rooms.AbstractRoom;
+import playthespire.actions.DisableAutoPlayAction;
+import playthespire.actions.EnableAutoPlayAction;
+import playthespire.patches.AutoPlayPatches;
 import playthespire.util.GeneralUtils;
 import playthespire.util.KeywordInfo;
 import playthespire.util.TextureLoader;
@@ -31,7 +34,11 @@ import java.util.*;
 public class PlayTheSpire implements
         EditStringsSubscriber,
         EditKeywordsSubscriber,
-        PostInitializeSubscriber {
+        PostInitializeSubscriber,
+        OnPlayerTurnStartPostDrawSubscriber,
+        OnStartBattleSubscriber,
+        PostBattleSubscriber
+{
     public static ModInfo info;
     public static String modID; //Edit your pom.xml to change this
     static { loadModInfo(); }
@@ -218,5 +225,26 @@ public class PlayTheSpire implements
         else {
             throw new RuntimeException("Failed to determine mod info/ID based on initializer.");
         }
+    }
+
+    @Override
+    public void receiveOnBattleStart(AbstractRoom abstractRoom) {
+        logger.info("receiving on start battle");
+        AbstractDungeon.actionManager.addToBottom(new DisableAutoPlayAction());
+        //AutoPlayPatches.OnRefreshHandCheckToPlayCardPatch.isCombatStarting = false;
+    }
+
+    @Override
+    public void receiveOnPlayerTurnStartPostDraw() {
+        logger.info("turn start post draw");
+        AbstractDungeon.actionManager.addToBottom(new EnableAutoPlayAction());
+        //AutoPlayPatches.OnRefreshHandCheckToPlayCardPatch.isCombatStarting = false;
+    }
+
+    @Override
+    public void receivePostBattle(AbstractRoom abstractRoom) {
+        logger.info("receiving on end battle");
+        AbstractDungeon.actionManager.addToBottom(new DisableAutoPlayAction());
+        //AutoPlayPatches.OnRefreshHandCheckToPlayCardPatch.isCombatStarting = false;
     }
 }
